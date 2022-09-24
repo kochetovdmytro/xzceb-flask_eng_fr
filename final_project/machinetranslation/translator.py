@@ -1,33 +1,23 @@
-'''importing ibm translation modules'''
+from machinetranslation import translator
+from flask import Flask, render_template, request
 import json
-from ibm_watson import LanguageTranslatorV3
-from ibm_cloud_sdk_core.authenticators import IAMAuthenticator
-import os
-from dotenv import load_dotenv
 
-load_dotenv()
+app = Flask("Web Translator")
 
-apikey = os.environ['apikey']
-url = os.environ['url']
+@app.route("/englishToFrench")
+def englishToFrench():
+    textToTranslate = request.args.get('textToTranslate')
+    translation = translator.englishToFrench(textToTranslate)
+    return translation
 
-authenticator = IAMAuthenticator(apikey)
-language_translator = LanguageTranslatorV3(
-    version='2018-05-01',
-    authenticator=authenticator
-)
+@app.route("/frenchToEnglish")
+def frenchToEnglish():
+    textToTranslate = request.args.get('textToTranslate')
+    translation = translator.frenchToEnglish(textToTranslate)
+    return translation
 
-language_translator.set_service_url(url)
-
-def englishToFrench(englishText):
-    '''Translates english text to french'''
-    translation = language_translator.translate(
-        text=englishText,
-        model_id='en-fr').get_result()
-    return json.dumps(translation, indent=2, ensure_ascii=False)
-
-def frenchToEnglish(frenchText):
-    '''Translates french text to english'''
-    translation = language_translator.translate(
-        text=frenchText,
-        model_id='fr-en').get_result()
-    return json.dumps(translation, indent=2, ensure_ascii=False)
+@app.route("/")
+def renderIndexPage():
+    return render_template("index.html")
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=8080)
